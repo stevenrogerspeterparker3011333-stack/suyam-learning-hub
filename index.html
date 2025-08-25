@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suyam – Student English Ability Test (Starfield)</title>
+  <style>
+    :root{
+      --card1:#a7f3d0;  /* green */
+      --card2:#67e8f9;  /* aqua  */
+      --cta1:#00e5ff;  /* aqua button */
+      --cta2:#18c29c;  /* teal button */
+      --ink:#08262c;   /* dark text on card */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:#000; color:#e8f7ff; font-family:Poppins,system-ui,Segoe UI,Roboto,Arial,sans-serif; overflow:hidden;
+    }
+
+    /* ---------- STARFIELD (two animated layers) ---------- */
+    #stars,#twinkle{position:fixed; inset:0; z-index:0; pointer-events:none}
+
+    /* ---------- PAGE WRAPPER ---------- */
+    .wrap{position:relative; z-index:2; width:min(1100px,95vw); height:min(95vh,980px); margin:auto}
+    @media(max-width:600px){
+      .wrap{height:auto; min-height:100vh; padding:10px}
+    }
+
+    /* ---------- TALL GRADIENT CARD (like your screenshot) ---------- */
+    .card{position:absolute; inset:0; border-radius:32px; padding:28px clamp(20px,3vw,44px); display:flex; flex-direction:column; align-items:center; gap:18px;
+      color:var(--ink);
+      background: linear-gradient(160deg, rgba(255,255,255,.94), rgba(255,255,255,.88)) padding-box,
+                  linear-gradient(160deg, var(--card1), var(--card2)) border-box; border:3px solid transparent;
+      box-shadow:0 30px 90px rgba(0,0,0,.55);
+    }
+    @media(max-width:600px){
+      .card{position:relative; inset:auto; padding:15px; border-radius:20px; height:auto; min-height:calc(100vh - 20px)}
+    }
+
+    /* stepper dots */
+    .stepper{display:flex; gap:8px; margin-top:4px}
+    .dot{width:12px;height:12px;border-radius:999px;background:rgba(8,38,44,.28)}
+    .dot.active{background:linear-gradient(135deg,var(--card1),var(--card2)); box-shadow:0 0 0 4px rgba(103,232,249,.28)}
+
+    /* pages */
+    section.page{display:none; width:100%; height:100%; overflow:hidden; display:none;}
+    section.page.active{display:flex; flex-direction:column; justify-content:space-between; animation:fade .45s ease}
+    @keyframes fade{from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:translateY(0)}}
+
+    h1{margin:0; font-size:clamp(22px,3vw,34px); color:#08262c}
+    h2{margin:.2rem 0; font-size:clamp(20px,2.4vw,28px); color:#0a2e36}
+    p{margin:.25rem 0; font-size:clamp(14px,1.5vw,18px); line-height:1.6; color:#0a2e36}
+
+    .sub{opacity:.9}
+
+    /* inner gradient panels (for tall story / forms) */
+    .panel{background:linear-gradient(135deg,#eafff9,#f0fdff); border:2px solid rgba(8,38,44,.08); border-radius:22px; padding:18px; box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+
+    /* forms */
+    label{font-weight:800; font-size:14px; color:#0a2e36}
+    input, textarea{width:100%; padding:12px 14px; border-radius:14px; border:2px solid rgba(8,38,44,.12); background:#fff; color:#0b2830; font-size:16px; outline:none; transition:.2s}
+    input:focus, textarea:focus{border-color:#00c9a7; box-shadow:0 0 0 4px rgba(0,201,167,.18)}
+    textarea{resize:none}
+
+    .grid{display:grid; gap:14px}
+    @media(min-width:900px){ .grid.two{grid-template-columns:1fr 1fr} }
+
+    .btn{border:0; border-radius:14px; padding:14px 18px; font-weight:900; font-size:16px; color:#00323b; cursor:pointer; background:linear-gradient(135deg,var(--cta1),var(--cta2));
+      box-shadow:0 10px 24px rgba(0,220,200,.35); transition:transform .15s ease, box-shadow .2s ease}
+    .btn:hover{transform:translateY(-2px); box-shadow:0 16px 34px rgba(0,220,200,.45)}
+    .btn.ghost{background:transparent; color:#08262c; border:2px solid rgba(8,38,44,.25)}
+
+    .nav{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap}
+    @media(max-width:600px){ 
+      .nav{flex-direction:column; gap:12px; margin-top:15px; width:100%}
+      .nav .btn{width:100% !important; text-align:center; min-height:48px; font-size:16px; padding:15px 20px; margin:0}
+      .panel{padding:15px; margin-bottom:15px; height:auto !important; overflow:visible !important}
+      h1{font-size:22px; line-height:1.3}
+      h2{font-size:20px; line-height:1.3}
+      p{font-size:15px; line-height:1.5}
+      .grid.two{grid-template-columns:1fr; gap:12px}
+      .slots{grid-template-columns:repeat(2,1fr); gap:10px}
+      .slot{padding:12px 8px; font-size:14px}
+      input, textarea{font-size:16px; padding:14px}
+      section.page.active{gap:15px; justify-content:flex-start}
+      body{overflow:auto}
+    }
+
+    /* timing slots */
+    .slots{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+    .slot{padding:12px; border-radius:12px; text-align:center; font-weight:800; color:#0b2830; background:linear-gradient(135deg,#ecfeff,#e6fff7); border:2px solid rgba(0,201,167,.25); cursor:pointer}
+    .slot.selected{outline:3px solid #00c9a7}
+    .slot[disabled]{opacity:.35; cursor:not-allowed; text-decoration:line-through}
+
+    .note{font-size:12px; color:#415a60; text-align:center}
+  </style>
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <canvas id="twinkle"></canvas>
+  <div class="wrap">
+    <div class="card">
+      <div class="stepper" id="dots"></div>
+      <section class="page active" id="pg1">
+        <div class="panel">
+          <h1>Suyam • Student English Ability Test</h1>
+          <p class="sub">Today a reader becomes a leader — and confident speaking makes leaders unforgettable. This short, story‑based test checks reading, writing, and speaking readiness. Parents: try it free, then book a trial to see us work. 🎤✨</p>
+        </div>
+        <div class="nav">
+          <button class="btn" onclick="go(1)">Continue →</button>
+        </div>
+      </section>
+      <section class="page" id="pg2">
+        <div class="panel" style="height:70%; overflow:auto">
+          <h2>Story: Rex & Aqua</h2>
+          <p>A mighty T-Rex 🦖 named Rex ruled the land. His roar echoed, but across the lake 🌊 lived Aqua, a graceful Spinosaurus 🦕. They were rivals. Rex challenged Aqua, diving into the water. Aqua met him head-on 💥. Suddenly, a blinding flash 🌠 and a massive asteroid hit! ☄️ The world changed. Rex and Aqua, fearing the end, huddled together in a cave 🤫. The once-lush world became barren 💀. Food was scarce 🦴. Rex found a weakening Aqua and brought her food 🐟. Aqua revealed a secret: a hidden, fertile land 🌱🌍. With her last breath 💨, she entrusted Rex with the knowledge. Inspired by her sacrifice 🙏, Rex led the remaining dinosaurs on a journey to the new land 🗺️. Hope endured, like Aqua's last song in Rex's heart 🎶💖.</p>
+        </div>
+        <div class="nav">
+          <button type="button" class="btn" onclick="go(2)">Continue →</button>
+        </div>
+      </section>
+      <section class="page" id="pg3">
+        <div class="panel" style="height:70%; overflow:auto">
+          <h2>English Ability Test ✍️</h2>
+          <div class="grid two">
+            <div>
+              <label>Student Age (5–16)</label> <input id="age" type="number" min="5" max="16" placeholder="Type age" required="">
+            </div>
+            <div>
+              <label>Student Name</label> <input id="studentName" placeholder="e.g., Arjun" required="">
+            </div>
+          </div>
+          <div class="grid" style="margin-top:10px">
+            <div>
+              <label>1) Write 2 sentences about Rex.</label> 
+              <textarea id="ans1" rows="3" placeholder="Rex…"></textarea>
+            </div>
+            <div>
+              <label>2) What lesson can we learn from Aqua?</label> 
+              <textarea id="ans2" rows="3" placeholder="Aqua shows…"></textarea>
+            </div>
+            <div>
+              <label>3) Copy one sentence from the story and rewrite it in your own words.</label> 
+              <textarea id="ans3" rows="3" placeholder="Copied: … | My version: …"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="nav" style="margin-top:12px; justify-content:space-between;">
+          <button type="button" class="btn ghost" onclick="go(1)">← Back</button>
+          <button type="button" class="btn" onclick="submitTest()">Submit Test →</button>
+        </div>
+      </section>
+      <section class="page" id="pg4">
+        <div class="panel" style="text-align:center">
+          <h2>Test Submitted Successfully! ✅</h2>
+          <p>Your English ability test has been submitted. We'll review your answers and provide feedback.</p>
+          <p class="sub">Would you like to book a <strong>Free Trial Session</strong> to see how we work?</p>
+        </div>
+        <div class="nav">
+          <button class="btn ghost" onclick="go(0)">← Back to Start</button>
+          <button class="btn" onclick="go(4)">Book Free Trial →</button>
+        </div>
+      </section>
+      <section class="page" id="pg5">
+        <div class="panel">
+          <h2>Want to see us work? 🚀 Take a Free Trial</h2>
+          <p class="sub">Choose any time between <b>4:00 PM and 10:00 PM (IST)</b>. Some slots may pause when our team is busy.</p>
+          <div class="grid two">
+            <div>
+              <label>Parent's Name</label> <input id="parentName" placeholder="e.g., Priya Sharma" required="">
+            </div>
+            <div>
+              <label>Contact Number (India)</label> <input id="parentPhone" type="tel" placeholder="98XXXXXXXX" required="">
+            </div>
+          </div>
+          <div class="grid two" style="margin-top:10px">
+            <div>
+              <label>Email</label> <input id="email" type="email" placeholder="name@email.com" required="">
+            </div>
+            <div>
+              <label>Date (today or future)</label> <input id="datePick" type="date" required="">
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <label>Available Timings</label>
+            <div id="slots" class="slots" style="margin-top:8px"></div>
+          </div>
+          <p class="note">📜 Certificate will be given to participants.</p>
+        </div>
+        <div class="nav">
+          <button class="btn ghost" onclick="go(3)">← Back</button> <button class="btn" onclick="submitTrial()">Submit & Book →</button>
+        </div>
+      </section>
+      <section class="page" id="pg6">
+        <div class="panel" style="text-align:center">
+          <h2>Thank you! 🎉</h2>
+          <p>We received your trial booking request. Our team will email you shortly.<br>
+          Certificate will be provided after the session. 🌟</p>
+        </div>
+        <div class="nav">
+          <button class="btn" onclick="go(0)">Back to Start</button>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script>
+    /* ---------------- Starfield (2 layers) ---------------- */
+    function starfield(canvas, count){
+      const ctx = canvas.getContext('2d');
+      function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+      resize(); addEventListener('resize', resize);
+      const stars = Array.from({length:count}, ()=>({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height,
+        r: Math.random()*1.8,
+        s: Math.random()*0.6+0.2
+      }));
+      (function draw(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = '#fff';
+        stars.forEach(st=>{
+          ctx.globalAlpha = st.s; ctx.beginPath(); ctx.arc(st.x,st.y,st.r,0,Math.PI*2); ctx.fill();
+          st.x -= st.s*0.25; if(st.x<0) st.x = canvas.width;
+        });
+        requestAnimationFrame(draw);
+      })();
+    }
+    starfield(document.getElementById('stars'), 320);
+    starfield(document.getElementById('twinkle'), 120);
+
+    /* ---------------- Pager logic ---------------- */
+    const pages=[...document.querySelectorAll('.page')];
+    const dots=[...document.querySelectorAll('#dots .dot')];
+    function go(i){ pages.forEach((p,idx)=> p.classList.toggle('active', idx===i)); dots.forEach((d,idx)=> d.classList.toggle('active', idx<=i)); }
+
+    /* ---------------- Slots & date controls ---------------- */
+    const slotsEl = document.getElementById('slots');
+    const SLOT_RANGE = ['4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM','9:00 PM','10:00 PM'];
+    let selectedSlot = '';
+    function renderSlots(){
+      slotsEl.innerHTML='';
+      SLOT_RANGE.forEach(t=>{
+        const b=document.createElement('button'); b.type='button'; b.className='slot'; b.textContent=t;
+        b.addEventListener('click',()=>{ [...slotsEl.querySelectorAll('.slot')].forEach(s=>s.classList.remove('selected')); b.classList.add('selected'); selectedSlot=t; });
+        slotsEl.appendChild(b);
+      });
+    }
+    renderSlots();
+
+    // Date: allow today and future, not past
+    const datePick = document.getElementById('datePick');
+    const today = new Date();
+    const yyyy=today.getFullYear(); const mm=String(today.getMonth()+1).padStart(2,'0'); const dd=String(today.getDate()).padStart(2,'0');
+    datePick.min = `${yyyy}-${mm}-${dd}`;
+
+    /* ---------------- Collect & submit to Formspree ---------------- */
+    // Submit test only
+    async function submitTest(){
+      const age = document.getElementById('age').value.trim();
+      const studentName = document.getElementById('studentName').value.trim();
+      const ans1 = document.getElementById('ans1').value.trim();
+      const ans2 = document.getElementById('ans2').value.trim();
+      const ans3 = document.getElementById('ans3').value.trim();
+
+      if(!age || !studentName){ alert('Please fill student name and age.'); return; }
+      if(!ans1 || !ans2 || !ans3){ alert('Please answer all three questions.'); return; }
+
+      const data = {
+        form_title: 'Suyam Student English Ability Test',
+        student_name: studentName,
+        student_age: age,
+        q1: ans1,
+        q2: ans2,
+        q3: ans3
+      };
+
+      try{
+        const fd = new FormData();
+        Object.entries(data).forEach(([k,v])=> fd.append(k,v));
+        const res = await fetch('https://formspree.io/f/mpwjalnr', { method:'POST', body: fd, headers:{ 'Accept':'application/json' } });
+        if(res.ok){ go(3); } // Go to test success page
+        else{ alert('Could not submit right now. Please try again.'); }
+      }catch(e){ alert('Network error. Please try again.'); }
+    }
+
+    // Submit trial booking only
+    async function submitTrial(){
+      const parentName = document.getElementById('parentName').value.trim();
+      const parentPhone = document.getElementById('parentPhone').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const date = document.getElementById('datePick').value;
+
+      if(!parentName || !parentPhone || !email || !date || !selectedSlot){ 
+        alert('Please complete all booking details and choose a time slot.'); 
+        return; 
+      }
+
+      // Get student info from test if available
+      const studentName = document.getElementById('studentName').value.trim() || 'Not provided';
+      const age = document.getElementById('age').value.trim() || 'Not provided';
+
+      // Format the date for better readability
+      const dateObj = new Date(date);
+      const formattedDate = dateObj.toLocaleDateString('en-IN', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+
+      const data = {
+        form_title: 'Suyam Free Trial Booking',
+        student_name: studentName,
+        student_age: age,
+        parent_name: parentName,
+        parent_phone: parentPhone,
+        email: email,
+        selected_date: formattedDate,
+        selected_time: selectedSlot,
+        raw_date: date,
+        booking_details: `Date: ${formattedDate}, Time: ${selectedSlot}`,
+        voucher: 'Free Trial – 1 Week',
+        certificate: 'Yes'
+      };
+
+      try{
+        const fd = new FormData();
+        Object.entries(data).forEach(([k,v])=> fd.append(k,v));
+        const res = await fetch('https://formspree.io/f/mpwjalnr', { method:'POST', body: fd, headers:{ 'Accept':'application/json' } });
+        if(res.ok){ go(5); } // Go to trial success page
+        else{ alert('Could not submit right now. Please try again.'); }
+      }catch(e){ alert('Network error. Please try again.'); }
+    }
+
+    // start at first page
+    go(0);
+  </script>
+</body>
+</html>
